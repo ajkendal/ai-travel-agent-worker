@@ -1,7 +1,6 @@
 import OpenAI from 'openai';
 
 // OPENAI_API_KEY
-// GOOGLE_GEOCODING_API_KEY
 // OPENWEATHER_API_KEY
 
 // SENDING
@@ -15,7 +14,9 @@ import OpenAI from 'openai';
 // RETURNING
 // Weather
 // Flights
+// Flights_url
 // Hotel
+// Hotel_url
 // Image
 // Activity Suggestions
 
@@ -30,11 +31,25 @@ const testData = {
 	budget: 5000,
 };
 
-const messages = [
+let input = [
 	{
 		role: 'system',
-		content:
-			'You are a travel assistant. The user will be passing information about their trip, including the number of travelers, origin, destination, start date, end date, and budget. We would like to return information about the weather, best flight, best hotel, one image from the location, and five activity suggestions.',
+		content: `You are a travel assistant. The user will be passing information about their trip, including the number of travelers, origin, destination, start date, end date, and budget. We would like to return information about the weather, best flight with a link to the flights, best hotel with the link to the hotel, one image from the location, and five activity suggestions with descriptions. response MUST formatted in JSON
+
+		{
+			Weather: '',
+			Flights: '',
+			Flights_url: '',
+			Hotel: '',
+			Hotel_url: '',
+			Image: '',
+			Activities: [],
+		}`,
+	},
+	// This will be moved to a push in the fetch with request.json()
+	{
+		role: 'user',
+		content: `Here is the trip information: Number of Travelers: ${testData.numberOfTravelers}, Origin: ${testData.origin}, Destination: ${testData.destination}, Start Date: ${testData.startDate}, End Date: ${testData.endDate}, Budget - USD: ${testData.budget}`,
 	},
 ];
 
@@ -60,7 +75,7 @@ export default {
 			}
 		}
 
-		async function getWeather(location, startDate, endDate) {
+		async function getWeather({ location, startDate, endDate }) {
 			const vacationDays = [];
 
 			const { lat, lon } = await getGeocoding(location);
@@ -80,6 +95,7 @@ export default {
 					const weatherData = await response.json();
 
 					vacationDays.push({
+						date: date,
 						summary: weatherData.daily[0].summary,
 						morning: weatherData.daily[0].temp.morn,
 						day: weatherData.daily[0].temp.day,
@@ -104,15 +120,56 @@ export default {
 			}
 		}
 
-		// const response = await openai.beta.chat.completions.runFunctions({
-		// 	model: 'gpt-4.1-nano',
-		// 	messages: messages,
-		// 	functions,
-		// });
+		const tools = [
+			{
+				type: 'function',
+				name: 'get_weather',
+				description: 'Get the weather for the trip destination and dates',
+				parameters: {
+					type: 'object',
+					properties: {
+						location: { type: 'string', description: 'The city e.g. Paris' },
+						startDate: { type: 'string', description: 'The start date of the trip YYYY-MM-DD' },
+						endDate: { type: 'string', description: 'The end date of the trip YYYY-MM-DD' },
+					},
+					required: ['location', 'startDate', 'endDate'],
+				},
+			},
+		];
 
-		const weather = await getWeather(testData.destination, testData.startDate, testData.endDate);
+		let response = await openai.responses.create({
+			model: 'gpt-5',
+			tools,
+			input,
+		});
 
-		return new Response(JSON.stringify({ weather }), {
+		let functionCall = null;
+		let functionCallArguments = null;
+		input = input.concat(response.output);
+
+		response.output.forEach((item) => {
+			if (item.type == 'function_call') {
+				functionCall = item;
+				functionCallArguments = JSON.parse(item.arguments);
+			}
+		});
+		const result = { weather: getWeather(functionCallArguments.location, functionCallArguments.startDate, functionCallArguments.endDate) };
+
+		input.push({
+			type: 'function_call_output',
+			call_id: functionCall.call_id,
+			output: JSON.stringify(result),
+		});
+
+		response = await openai.responses.create({
+			model: 'gpt-5',
+			tools,
+			input,
+		});
+
+		const finalResponse = response.output[1].content[0].text;
+
+		return new Response(JSON.stringify(finalResponse), {
 			headers: corsHeaders,
 		});
 	},
