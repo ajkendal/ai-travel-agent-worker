@@ -137,40 +137,46 @@ export default {
 			},
 		];
 
-		let response = await openai.responses.create({
-			model: 'gpt-5',
-			tools,
-			input,
-		});
+		try {
+			let response = await openai.responses.create({
+				model: 'gpt-5',
+				tools,
+				input,
+			});
 
-		let functionCall = null;
-		let functionCallArguments = null;
-		input = input.concat(response.output);
+			let functionCall = null;
+			let functionCallArguments = null;
+			input = input.concat(response.output);
 
-		response.output.forEach((item) => {
-			if (item.type == 'function_call') {
-				functionCall = item;
-				functionCallArguments = JSON.parse(item.arguments);
-			}
-		});
-		const result = { weather: getWeather(functionCallArguments.location, functionCallArguments.startDate, functionCallArguments.endDate) };
+			response.output.forEach((item) => {
+				if (item.type == 'function_call') {
+					functionCall = item;
+					functionCallArguments = JSON.parse(item.arguments);
+				}
+			});
+			const result = {
+				weather: getWeather(functionCallArguments.location, functionCallArguments.startDate, functionCallArguments.endDate),
+			};
 
-		input.push({
-			type: 'function_call_output',
-			call_id: functionCall.call_id,
-			output: JSON.stringify(result),
-		});
+			input.push({
+				type: 'function_call_output',
+				call_id: functionCall.call_id,
+				output: JSON.stringify(result),
+			});
 
-		response = await openai.responses.create({
-			model: 'gpt-5',
-			tools,
-			input,
-		});
+			response = await openai.responses.create({
+				model: 'gpt-5',
+				tools,
+				input,
+			});
 
-		const finalResponse = response.output[1].content[0].text;
+			const finalResponse = response.output[1].content[0].text;
 
-		return new Response(JSON.stringify(finalResponse), {
-			headers: corsHeaders,
-		});
+			return new Response(JSON.stringify(finalResponse), {
+				headers: corsHeaders,
+			});
+		} catch (error) {
+			return new Response(`Error: ${error.message}`, { status: 500, headers: corsHeaders });
+		}
 	},
 };
