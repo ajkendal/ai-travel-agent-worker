@@ -37,19 +37,14 @@ let input = [
 		content: `You are a travel assistant. The user will be passing information about their trip, including the number of travelers, origin, destination, start date, end date, and budget. We would like to return information about the weather, best flight with a link to the flights, best hotel with the link to the hotel, one image from the location, and five activity suggestions with descriptions. response MUST formatted in JSON
 
 		{
-			Weather: '',
-			Flights: '',
-			Flights_url: '',
-			Hotel: '',
-			Hotel_url: '',
-			Image: '',
-			Activities: [],
+			weather: '',
+			flights: '',
+			flights_url: '',
+			hotel: '',
+			hotel_url: '',
+			image: '',
+			activities: [],
 		}`,
-	},
-	// This will be moved to a push in the fetch with request.json()
-	{
-		role: 'user',
-		content: `Here is the trip information: Number of Travelers: ${testData.numberOfTravelers}, Origin: ${testData.origin}, Destination: ${testData.destination}, Start Date: ${testData.startDate}, End Date: ${testData.endDate}, Budget - USD: ${testData.budget}`,
 	},
 ];
 
@@ -74,6 +69,11 @@ export default {
 				return { lat: 0, lon: 0 };
 			}
 		}
+
+		input.push({
+			role: 'user',
+			content: `Here is the trip information: Number of Travelers: ${testData.numberOfTravelers}, Origin: ${testData.origin}, Destination: ${testData.destination}, Start Date: ${testData.startDate}, End Date: ${testData.endDate}, Budget - USD: ${testData.budget}`,
+		});
 
 		async function getWeather({ location, startDate, endDate }) {
 			const vacationDays = [];
