@@ -13,12 +13,13 @@ import OpenAI from 'openai';
 
 // RETURNING
 // Weather
+// Weather_icon
 // Flights
 // Flights_url
 // Hotel
 // Hotel_url
 // Image
-// Activity Suggestions
+// Activities
 
 import { corsHeaders } from './headers';
 
@@ -34,7 +35,7 @@ const testData = {
 let input = [
 	{
 		role: 'system',
-		content: `You are a travel assistant. The user will be passing information about their trip, including the number of travelers, origin, destination, start date, end date, and budget. We would like to return information about the weather, an icon associated with the weather, best flight with a link to the flights, best hotel with the link to the hotel, one image from the location, and five activity suggestions with descriptions. response MUST formatted in JSON
+		content: `You are a travel assistant. The user will be passing information about their trip, including the number of travelers, origin, destination, start date, end date, and budget. We would like to return information about the weather, an icon associated with the weather from the icon_list, best flight with a link to the flights, best hotel with the link to the hotel, one image that represents the destination, and five activity suggestions with descriptions from the destination. response MUST formatted in JSON
 
 		{
 			weather: '',
@@ -44,8 +45,15 @@ let input = [
 			hotel: '',
 			hotel_url: '',
 			image: '',
-			activities: [],
-		}`,
+			activities: [
+			{
+				name: '',
+				description: '',
+			}],
+		}
+
+		icon_list: Hail, BlowingSnow, Wind, Snow, Sleet, Blizzard, RainThunder, ScatteredThunderstorm, DrizzleNight, DrizzleSun, Drizzle, RainNight, RainSun, Rain, ScatteredShowersNight, ScatteredShowersDay, HeavyRain, Humidity, Fog, CloudyClearNight, PartlyCloudyNight, CloudyClearDay, PartlyCloudyClearDay, CloudyDay, CloudyNight, Sunny
+		`,
 	},
 ];
 
