@@ -35,7 +35,7 @@ const testData = {
 let input = [
 	{
 		role: 'system',
-		content: `You are a travel assistant. The user will be passing information about their trip, including the number of travelers, origin, destination, start date, end date, and budget. We would like to return information about the weather, an icon associated with the weather from the icon_list, best flight with a link to the flights, best hotel with the link to the hotel, one image that represents the destination, and five activity suggestions with descriptions from the destination. response MUST formatted in JSON
+		content: `You are a travel assistant. The user will be passing information about their trip, including the number of travelers, origin, destination, start date, end date, and budget. We would like to return information about the weather (if you can not get accurate weather data make an assumption for the typical weather of the location at that time), an icon associated with the weather from the icon_list, best flight with a link to the flights, best hotel with the link to the hotel, one image that represents the destination, and five activity suggestions with descriptions from the destination. response MUST formatted in JSON
 
 		{
 			weather: '',
