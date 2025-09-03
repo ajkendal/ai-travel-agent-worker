@@ -66,9 +66,11 @@ export default {
 			return new Response(null, { headers: corsHeaders });
 		}
 
+		const data = await request.json();
+
 		input.push({
 			role: 'user',
-			content: `Here is the trip information: Number of Travelers: ${testData.numberOfTravelers}, Origin: ${testData.origin}, Destination: ${testData.destination}, Start Date: ${testData.startDate}, End Date: ${testData.endDate}, Budget - USD: ${testData.budget}`,
+			content: `Here is the trip information: Number of Travelers: ${data.numberOfTravelers}, Origin: ${data.origin}, Destination: ${data.destination}, Start Date: ${data.startDate}, End Date: ${data.endDate}, Budget - USD: ${data.budget}`,
 		});
 
 		// async function getGeocoding(destination) {
