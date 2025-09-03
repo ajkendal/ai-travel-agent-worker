@@ -66,70 +66,71 @@ export default {
 			return new Response(null, { headers: corsHeaders });
 		}
 
-		async function getGeocoding(destination) {
-			try {
-				const response = await fetch(
-					`http://api.openweathermap.org/geo/1.0/direct?q=${destination}&limit=5&appid=${env.OPENWEATHER_API_KEY}`
-				);
-
-				const geocoding = await response.json();
-				return geocoding[0];
-			} catch (error) {
-				console.error('Error fetching geocoding:', error);
-
-				return { lat: 0, lon: 0 };
-			}
-		}
-
 		input.push({
 			role: 'user',
 			content: `Here is the trip information: Number of Travelers: ${testData.numberOfTravelers}, Origin: ${testData.origin}, Destination: ${testData.destination}, Start Date: ${testData.startDate}, End Date: ${testData.endDate}, Budget - USD: ${testData.budget}`,
 		});
 
-		async function getWeather({ location, startDate, endDate }) {
-			const vacationDays = [];
+		// async function getGeocoding(destination) {
+		// 	try {
+		// 		const response = await fetch(
+		// 			`http://api.openweathermap.org/geo/1.0/direct?q=${destination}&limit=5&appid=${env.OPENWEATHER_API_KEY}`
+		// 		);
 
-			const { lat, lon } = await getGeocoding(location);
+		// 		const geocoding = await response.json();
+		// 		return geocoding[0];
+		// 	} catch (error) {
+		// 		console.error('Error fetching geocoding:', error);
+		// 		return new Response(`Error: ${error.message}`, { status: 500, headers: corsHeaders });
+		// 		return { lat: 0, lon: 0 };
+		// 	}
+		// }
 
-			const start = new Date(startDate);
-			const end = new Date(endDate);
+		// async function getWeather({ location, startDate, endDate }) {
+		// 	const vacationDays = [];
 
-			let currentDate = new Date(start);
+		// 	const { lat, lon } = await getGeocoding(location);
 
-			try {
-				while (currentDate <= end) {
-					const date = currentDate.toISOString().split('T')[0];
-					const response = await fetch(
-						`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&date=${date}&exclude=current,minutely,alerts,hourly&units=imperial&appid=${env.OPENWEATHER_API_KEY}`
-					);
+		// 	const start = new Date(startDate);
+		// 	const end = new Date(endDate);
 
-					const weatherData = await response.json();
+		// 	let currentDate = new Date(start);
 
-					vacationDays.push({
-						date: date,
-						summary: weatherData.daily[0].summary,
-						morning: weatherData.daily[0].temp.morn,
-						day: weatherData.daily[0].temp.day,
-						night: weatherData.daily[0].temp.night,
-						weather: weatherData.daily[0].weather[0].description,
-					});
+		// 	try {
+		// 		while (currentDate <= end) {
+		// 			const date = currentDate.toISOString().split('T')[0];
+		// 			const response = await fetch(
+		// 				`https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&date=${date}&exclude=current,minutely,alerts,hourly&units=imperial&appid=${env.OPENWEATHER_API_KEY}`
+		// 			);
 
-					currentDate.setDate(currentDate.getDate() + 1);
-				}
+		// 			const weatherData = await response.json();
 
-				return vacationDays;
-			} catch (error) {
-				console.error('Error fetching weather data:', error);
-				vacationDays.push({
-					summary: 'Unable to retrieve weather data',
-					morning: 0,
-					day: 0,
-					night: 0,
-					weather: 'Unknown',
-				});
-				return vacationDays;
-			}
-		}
+		// 			vacationDays.push({
+		// 				date: date,
+		// 				summary: weatherData.daily[0].summary,
+		// 				morning: weatherData.daily[0].temp.morn,
+		// 				day: weatherData.daily[0].temp.day,
+		// 				night: weatherData.daily[0].temp.night,
+		// 				weather: weatherData.daily[0].weather[0].description,
+		// 			});
+
+		// 			currentDate.setDate(currentDate.getDate() + 1);
+		// 		}
+
+		// 		return vacationDays;
+		// 	} catch (error) {
+		// 		console.error('Error fetching weather data:', error);
+		// 		vacationDays.push({
+		// 			summary: 'Unable to retrieve weather data',
+		// 			morning: 0,
+		// 			day: 0,
+		// 			night: 0,
+		// 			weather: 'Unknown',
+		// 		});
+		// 		return new Response(`Error: ${error.message}`, { status: 500, headers: corsHeaders });
+		// 		return vacationDays;
+		// 	}
+		// }
 
 		const tools = [
 			{
@@ -149,35 +150,35 @@ export default {
 		];
 
 		try {
-			let response = await openai.responses.create({
+			// let response = await openai.responses.create({
+			// 	model: 'gpt-5',
+			// 	tools,
+			// 	input,
+			// });
+
+			// let functionCall = null;
+			// let functionCallArguments = null;
+			// input = input.concat(response.output);
+
+			// response.output.forEach((item) => {
+			// 	if (item.type == 'function_call') {
+			// 		functionCall = item;
+			// 		functionCallArguments = JSON.parse(item.arguments);
+			// 	}
+			// });
+			// const result = {
+			// 	weather: getWeather(functionCallArguments.location, functionCallArguments.startDate, functionCallArguments.endDate),
+			// };
+
+			// input.push({
+			// 	type: 'function_call_output',
+			// 	call_id: functionCall.call_id,
+			// 	output: JSON.stringify(result),
+			// });
+
+			const response = await openai.responses.create({
 				model: 'gpt-5',
-				tools,
-				input,
-			});
-
-			let functionCall = null;
-			let functionCallArguments = null;
-			input = input.concat(response.output);
-
-			response.output.forEach((item) => {
-				if (item.type == 'function_call') {
-					functionCall = item;
-					functionCallArguments = JSON.parse(item.arguments);
-				}
-			});
-			const result = {
-				weather: getWeather(functionCallArguments.location, functionCallArguments.startDate, functionCallArguments.endDate),
-			};
-
-			input.push({
-				type: 'function_call_output',
-				call_id: functionCall.call_id,
-				output: JSON.stringify(result),
-			});
-
-			response = await openai.responses.create({
-				model: 'gpt-5',
-				tools,
+				// tools,
 				input,
 			});
 
