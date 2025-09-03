@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-
+import { corsHeaders } from './headers';
 // OPENAI_API_KEY
 // OPENWEATHER_API_KEY
 
@@ -21,12 +21,10 @@ import OpenAI from 'openai';
 // Image
 // Activities
 
-import { corsHeaders } from './headers';
-
 const testData = {
 	numberOfTravelers: 2,
-	origin: 'New York',
-	destination: 'Paris',
+	origin: 'New York, NY, USA',
+	destination: 'Paris, France',
 	startDate: '2025-09-28',
 	endDate: '2025-10-01',
 	budget: 5000,
@@ -52,7 +50,7 @@ let input = [
 			}],
 		}
 
-		icon_list: Hail, BlowingSnow, Wind, Snow, Sleet, Blizzard, RainThunder, ScatteredThunderstorm, DrizzleNight, DrizzleSun, Drizzle, RainNight, RainSun, Rain, ScatteredShowersNight, ScatteredShowersDay, HeavyRain, Humidity, Fog, CloudyClearNight, PartlyCloudyNight, CloudyClearDay, PartlyCloudyClearDay, CloudyDay, CloudyNight, Sunny
+		icon_list: SevereThunderstorms, Hail, BlowingSnow, Wind, Snow, Sleet, Blizzard, RainAndThunder, ScatteredThunderstorms, DrizzleNightTime, DrizzleDayTime, Drizzle, RainNightTime, RainDayTime, Rain, ScatteredShowersNightTime, ScatteredShowersDayTime, HeavyRain, Humidity, Fog, CloudyClearNightTime, PartlyCloudyNightTime, CloudyClearDayTime, PartlyCloudyClearDayTime, CloudyDayTime, Sunny, ClearNightTime
 		`,
 	},
 ];
@@ -63,6 +61,10 @@ export default {
 			apiKey: env.OPENAI_API_KEY,
 			baseURL: 'https://gateway.ai.cloudflare.com/v1/e6ce664595e6c095158447cc6b80bc37/ai-travel-agent/openai',
 		});
+
+		if (request.method === 'OPTIONS') {
+			return new Response(null, { headers: corsHeaders });
+		}
 
 		async function getGeocoding(destination) {
 			try {
